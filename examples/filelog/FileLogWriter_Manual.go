@@ -6,9 +6,9 @@ import (
 	"io"
 	"os"
 	"time"
-)
 
-import l4g "code.google.com/p/log4go"
+	l4g "github.com/walkon/log4go"
+)
 
 const (
 	filename = "flw.log"
@@ -19,11 +19,11 @@ func main() {
 	log := l4g.NewLogger()
 
 	// Create a default logger that is logging messages of FINE or higher
-	log.AddFilter("file", l4g.FINE, l4g.NewFileLogWriter(filename, false))
+	log.AddFilter("file", l4g.FINE, l4g.NewFileLogWriter(filename, false, true, 100))
 	log.Close()
 
 	/* Can also specify manually via the following: (these are the defaults) */
-	flw := l4g.NewFileLogWriter(filename, false)
+	flw := l4g.NewFileLogWriter(filename, false, true, 100)
 	flw.SetFormat("[%D %T] [%L] (%S) %M")
 	flw.SetRotate(false)
 	flw.SetRotateSize(0)

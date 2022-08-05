@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-import l4g "code.google.com/p/log4go"
+import l4g "github.com/walkon/log4go"
 
 func main() {
 	log := l4g.NewLogger()
@@ -15,4 +15,4 @@ func main() {
 
 	// This makes sure the output stream buffer is written
 	log.Close()
-}
+} 
