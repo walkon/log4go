@@ -22,7 +22,10 @@ type formatCacheType struct {
 	longTime, longDate   string
 }
 
-var formatCache = &formatCacheType{}
+var (
+	formatCache = &formatCacheType{}
+	dttmRegex   *regexp.Regexp
+)
 
 // Known format codes:
 // %T - Time (15:04:05 MST)
@@ -136,9 +139,11 @@ func (w FormatLogWriter) Close() {
 
 func changeDttmFormat(format string, rec *LogRecord) []byte {
 	formatByte := []byte(format)
-	r := regexp.MustCompile("\\%D\\{(.*?)\\}")
+	if dttmRegex == nil {
+		dttmRegex = regexp.MustCompile(string("\\%D\\{(.*?)\\}"))
+	}
 	i := 0
-	formatByte = r.ReplaceAllFunc(formatByte, func(s []byte) []byte {
+	formatByte = dttmRegex.ReplaceAllFunc(formatByte, func(s []byte) []byte {
 		if i < 2 {
 			i++
 			str := string(s)
