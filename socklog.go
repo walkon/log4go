@@ -47,8 +47,7 @@ func NewSocketLogWriter(proto, hostport string) SocketLogWriter {
 			*/
 			_, err := sock.Write([]byte(rec.Message))
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "SocketLogWriter(%q): %s", hostport, err)
-				return
+				fmt.Fprintf(os.Stderr, "SockLogWriteErr:%s # %s\n", err.Error(), rec.Message)
 			}
 		}
 	}()
