@@ -94,7 +94,7 @@ func (l Level) String() string {
 var (
 	// LogBufferLength specifies how many log messages a particular log4go
 	// logger can buffer at a time before writing them.
-	LogBufferLength = 32
+	LogBufferLength = 2048
 )
 
 /****** LogRecord ******/

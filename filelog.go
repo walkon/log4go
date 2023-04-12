@@ -3,7 +3,10 @@
 package log4go
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -82,8 +85,9 @@ func NewFileLogWriter(fname string, rotate bool, daily bool, maxbackup int) *Fil
 	w.currbackup = w.getCurrBackup()
 
 	// open the file for the first time
-	if err := w.intRotate(); err != nil {
-		fmt.Fprintf(os.Stderr, "FileLogWriter(%q): %s\n", w.filename, err)
+	// if err := w.intRotate(); err != nil {
+	if err := w.startInitFile(); err != nil {
+		fmt.Fprintf(os.Stderr, "start init failed. FileLogWriter(%q): %s\n", w.filename, err)
 		return nil
 	}
 
@@ -153,6 +157,61 @@ func (w *FileLogWriter) getCurrBackup() int {
 		}
 	}
 	return 1
+}
+
+func lineCounter(filename string) int {
+	file, err := os.Open(filename)
+	if err != nil {
+		return 0
+	}
+	r := bufio.NewReader(file)
+
+	buf := make([]byte, 32*1024)
+	count := 0
+	lineSep := []byte{'\n'}
+
+	for {
+		c, err := r.Read(buf)
+		count += bytes.Count(buf[:c], lineSep)
+
+		switch {
+		case err == io.EOF:
+			return count
+
+		case err != nil:
+			return count
+		}
+	}
+	return count
+}
+
+func (w *FileLogWriter) startInitFile() error {
+	now := time.Now()
+	info, err := os.Stat(w.filename)
+	if err == nil { // file exists
+		w.daily_opendate = info.ModTime().Day()
+		w.maxsize_cursize = int(info.Size())
+		w.maxlines_curlines = lineCounter(w.filename)
+
+		if (w.maxlines > 0 && w.maxlines_curlines >= w.maxlines) ||
+			(w.maxsize > 0 && w.maxsize_cursize >= w.maxsize) ||
+			(w.daily && now.Day() != w.daily_opendate) {
+			return w.intRotate()
+		}
+	} else {
+		w.daily_opendate = now.Day()
+		w.maxsize_cursize = 0
+		w.maxlines_curlines = 0
+	}
+
+	// Open the log file
+	fd, err := os.OpenFile(w.filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
+	if err != nil {
+		return err
+	}
+	w.file = fd
+
+	return nil
 }
 
 // If this is called in a threaded context, it MUST be synchronized
