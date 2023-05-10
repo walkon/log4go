@@ -37,25 +37,10 @@ func NewSocketLogWriter(proto, hostport string) SocketLogWriter {
 		}()
 
 		for rec := range w {
-			/*
-				// Marshall into JSON
-				js, err := json.Marshal(rec)
-				if err != nil {
-					fmt.Fprint(os.Stderr, "SocketLogWriter(%q): %s", hostport, err)
-					return
-				}
-			*/
 			_, err := sock.Write([]byte(rec.Message))
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "SockLogWriteErr:%s # %s\n", err.Error(), rec.Message)
-				// return
-				// 重连
-
+				fmt.Fprintf(os.Stderr, "SockLogWriteErr:%s, # %s\n", err.Error(), rec.Message)
 				sock, err = net.Dial(proto, hostport)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, "NewSocketLogWriter(%q): %s\n", hostport, err)
-					// return nil
-				}
 			}
 		}
 	}()
