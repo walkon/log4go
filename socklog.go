@@ -49,6 +49,13 @@ func NewSocketLogWriter(proto, hostport string) SocketLogWriter {
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "SockLogWriteErr:%s # %s\n", err.Error(), rec.Message)
 				// return
+				// 重连
+
+				sock, err = net.Dial(proto, hostport)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "NewSocketLogWriter(%q): %s\n", hostport, err)
+					// return nil
+				}
 			}
 		}
 	}()
